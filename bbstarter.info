@@ -1,0 +1,4 @@
+name = bbstarter
+description = starter for a backbone app
+core = 7.x
+dependencies[] = restws_settings

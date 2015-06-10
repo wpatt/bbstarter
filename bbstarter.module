@@ -1,0 +1,82 @@
+<?php
+
+
+/**
+ * Implements hook_menu().
+ */
+function bbstarter_menu() {
+  $items = array();
+
+  $items['bbstarter'] = array(
+    'title' => 'home page',
+    'page callback' => 'bbstarter_page_callback',
+    'access callback' => TRUE,
+  );
+
+  return $items;
+}
+
+function bbstarter_page_callback() {
+  bbstarter_csrf_meta();
+
+  $module_path = drupal_get_path('module', 'bbstarter');
+
+  $content = array(
+    '#markup' => '',
+    '#attached' => array(
+      // include backbone (underscore is automatically added as a dependency)
+      'libraries_load' => array( array('backbone') ),
+      // include our custom js and settings
+      'js' => array(
+        array('data' => $module_path . '/build/js/app.min.js', 'type' => 'file', 'scope' => 'footer'),
+        array('data' => $module_path . '/build/js/bbstarter.js', 'type' => 'file', 'scope' => 'footer'),
+      ),
+      'css' => array(
+        array('data' => $module_path . '/build/css/bbstarter.css', 'type' => 'file'),
+      ),
+    ),
+  );
+
+  // Add markup and underscore templates.
+  $content['#markup'] .= _bbstarter_markup__app_view();
+  $content['#markup'] .= _bbstarter_template__node_view();
+
+  return $content;
+}
+
+/**
+ * Helper function to create a meta tag
+ */
+function bbstarter_csrf_meta() {
+  $element = array(
+    '#tag' => 'meta',
+    '#attributes' => array(
+      'name' => 'x-csrf-token',
+      'content' => drupal_get_token('restws'),
+    ),
+  );
+  drupal_add_html_head($element, 'restws_csrf_token');
+}
+
+/**
+ * HTML for the appView
+ *
+ * Since this is so tightly coupled with the javascript it is not going through
+ * the theme layer.
+ */
+function _bbstarter_markup__app_view() {
+  return <<<END
+    <div id="bbstarter"></div>
+END;
+}
+
+/**
+ * Underscore template for nodeView
+ */
+function _bbstarter_template__node_view() {
+  return <<<END
+    <script type="text/template" id="nodeView">
+      <li><%= title %></li>
+    </script>
+END;
+}
